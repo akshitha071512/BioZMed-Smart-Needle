@@ -1,0 +1,15 @@
+# Arduino/IDE build files
+build/
+out/
+*.elf
+*.bin
+*.hex
+*.map
+*.o
+*.d
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
