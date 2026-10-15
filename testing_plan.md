@@ -1,27 +1,13 @@
-# Staged testing plan
+# Firmware test cases
 
-## Stage 1 — ESP32 basic test
-- Upload the starter sketch.
-- Confirm serial output.
-- Record board model, IDE version, and test date.
+Prepared for execution when an ESP32 board is available. These tests have not been run yet.
 
-## Stage 2 — Measurement circuit bench test
-- Finalize the circuit and interface.
-- Test with known resistive loads.
-- Record expected and measured values, test frequency, and setup.
-- Do not proceed if readings are unstable or the circuit is not understood.
-
-## Stage 3 — Electrode and phantom test
-- Build a tissue phantom with an embedded vessel-like tube.
-- Use a sensing electrode and a fixed reference electrode.
-- Record actual needle position and measured signal at each step.
-- Repeat trials to check consistency.
-
-## Stage 4 — Analysis and alert
-- Analyse real measurements.
-- Determine whether the signal consistently changes across positions.
-- Choose alert thresholds only from measured data.
-- Report false alerts and missed detections as well as successful detections.
-
-## Safety
-Use only electrical test loads and tissue phantoms. Do not connect the prototype to a person.
+| ID | Input/action | Expected result | Status |
+|---|---|---|---|
+| TC-01 | Power on/reset | Startup banner appears | Not run |
+| TC-02 | Send `STATUS` | Diagnostic status prints | Not run |
+| TC-03 | Send `STOP` | Periodic heartbeat stops | Not run |
+| TC-04 | Send `START` | Periodic heartbeat resumes | Not run |
+| TC-05 | Send `HELP` | Command list appears | Not run |
+| TC-06 | Send unknown command | Helpful error message appears | Not run |
+| TC-07 | Send an overlong command | Input is cleared and error reported | Not run |
