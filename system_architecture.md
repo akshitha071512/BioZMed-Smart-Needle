@@ -10,8 +10,7 @@ Needle sensing electrode + reference electrode
 ## Current design notes
 - The exact impedance measurement circuit and its interface are not finalized.
 - The needle/electrode arrangement must be tested with known electrical loads before phantom trials.
-- The response associated with vessel entry or far-wall proximity is not yet established experimentally.
-- Thresholds must be derived from collected data, not assumed in advance.
-
+- The response associated with vessel entry or far-wall proximity is yet to established experimentally.
+- Thresholds must be derived from collected data
 ## Scope
 Initial testing is planned with a tissue phantom only. No human-subject testing is included in the current prototype stage.
