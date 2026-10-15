@@ -1,40 +1,107 @@
 /*
-  BioZMed ESP32 firmware scaffold
-  Purpose: verify ESP32 startup and serial communication.
+  BioZMed ESP32 - Diagnostic Firmware Scaffold
+  Implemented: serial diagnostics, HELP/STATUS/START/STOP commands,
+  periodic status heartbeat, unknown/overlong input handling.
 
-  IMPORTANT:
-  - This starter sketch does NOT measure impedance.
-  - It does NOT generate fake sensor readings.
-  - Sensor acquisition and alert thresholds must be added only after
-    the actual impedance circuit/interface is selected and tested.
-  - For laboratory phantom testing only; never connect to a person.
+  Not implemented: bioimpedance measurement, sensor acquisition,
+  vein-entry/far-wall detection, validated alert thresholds.
+
+  Bench/phantom development only. Never connect a prototype to a person.
 */
+#include <Arduino.h>
+#include <string.h>
 
 const unsigned long STATUS_INTERVAL_MS = 2000;
+const size_t COMMAND_BUFFER_SIZE = 64;
 unsigned long lastStatusTime = 0;
+bool statusReportingEnabled = true;
+char commandBuffer[COMMAND_BUFFER_SIZE];
+size_t commandLength = 0;
+
+void printHelp() {
+  Serial.println();
+  Serial.println("Commands: HELP, STATUS, START, STOP");
+  Serial.println("HELP   - Show commands");
+  Serial.println("STATUS - Show diagnostic status");
+  Serial.println("START  - Enable periodic status messages");
+  Serial.println("STOP   - Disable periodic status messages");
+}
+
+void printStatus() {
+  Serial.println();
+  Serial.println("=== BioZMed Diagnostic Status ===");
+  Serial.println("Firmware: running");
+  Serial.println("Serial interface: active");
+  Serial.println("Impedance measurement: NOT IMPLEMENTED");
+  Serial.println("Position detection: NOT IMPLEMENTED");
+  Serial.print("Periodic status reporting: ");
+  Serial.println(statusReportingEnabled ? "enabled" : "disabled");
+  Serial.println("=================================");
+}
+
+void processCommand(char *command) {
+  while (*command == ' ' || *command == '\t') command++;
+  size_t len = strlen(command);
+  while (len > 0 && (command[len - 1] == ' ' ||
+         command[len - 1] == '\t' || command[len - 1] == '\r')) {
+    command[--len] = '\0';
+  }
+  for (size_t i = 0; command[i] != '\0'; i++) {
+    if (command[i] >= 'a' && command[i] <= 'z')
+      command[i] = command[i] - ('a' - 'A');
+  }
+
+  if (strcmp(command, "HELP") == 0) {
+    printHelp();
+  } else if (strcmp(command, "STATUS") == 0) {
+    printStatus();
+  } else if (strcmp(command, "START") == 0) {
+    statusReportingEnabled = true;
+    lastStatusTime = millis();
+    Serial.println("Periodic status reporting enabled.");
+  } else if (strcmp(command, "STOP") == 0) {
+    statusReportingEnabled = false;
+    Serial.println("Periodic status reporting disabled.");
+  } else if (len > 0) {
+    Serial.print("Unknown command: ");
+    Serial.println(command);
+    Serial.println("Type HELP for available commands.");
+  }
+}
+
+void readSerialCommands() {
+  while (Serial.available() > 0) {
+    char incoming = (char)Serial.read();
+    if (incoming == '\n') {
+      commandBuffer[commandLength] = '\0';
+      processCommand(commandBuffer);
+      commandLength = 0;
+    } else if (incoming != '\r') {
+      if (commandLength < COMMAND_BUFFER_SIZE - 1) {
+        commandBuffer[commandLength++] = incoming;
+      } else {
+        commandLength = 0;
+        Serial.println("Error: command too long; input cleared.");
+      }
+    }
+  }
+}
 
 void setup() {
   Serial.begin(115200);
   delay(500);
-
   Serial.println();
-  Serial.println("BioZMed ESP32 firmware scaffold");
-  Serial.println("Status: serial communication test only");
-  Serial.println("Impedance sensor: not connected / not implemented");
+  Serial.println("BioZMed ESP32 Diagnostic Firmware");
+  Serial.println("Serial interface test; no sensor data is being read.");
+  printHelp();
+  printStatus();
 }
 
 void loop() {
-  const unsigned long now = millis();
-
-  if (now - lastStatusTime >= STATUS_INTERVAL_MS) {
+  readSerialCommands();
+  unsigned long now = millis();
+  if (statusReportingEnabled && now - lastStatusTime >= STATUS_INTERVAL_MS) {
     lastStatusTime = now;
-    Serial.println("System running. No impedance measurement available yet.");
+    Serial.println("Diagnostic heartbeat: firmware running; no sensor data.");
   }
-
-  // TODO after hardware interface is finalized:
-  // 1. Initialize the impedance measurement circuit.
-  // 2. Read actual sensor data and check for communication errors.
-  // 3. Record timestamped readings for phantom trials.
-  // 4. Establish thresholds from measured data, not guessed values.
-  // 5. Add alerts only after validating the measurement behaviour.
 }
