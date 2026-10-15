@@ -1,4 +1,4 @@
-# BioZMed – Review 2 Firmware Deliverable
+
 
 This folder contains an ESP32 diagnostic firmware scaffold.
 
